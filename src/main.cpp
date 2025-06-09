@@ -1,0 +1,277 @@
+
+#include <emscripten.h>
+#include <SDL2/SDL.h>
+
+#include "Application.h"
+// We use app global variable in loop() function.
+Application* app = 0;
+// Stand alone function that is called by Emscripten to run the app.
+void loop()
+{
+	SDL_Event e;
+	while (SDL_PollEvent(&e))
+	{
+		if (app)
+		{
+			app->handleEvent(e);
+		}
+	}
+	if (app)
+	{
+		app->frame();
+	}
+}
+extern "C" {
+
+	// void EMSCRIPTEN_KEEPALIVE Foo()
+	// {
+	//     if(app)
+	//     {
+	//         app->loadScene("res/box.osgt");
+	//     } 
+	// }
+    int extern custom_add(int a, int b);
+	int EMSCRIPTEN_KEEPALIVE SumJSArray(int* arr, int size)
+	{
+		int sum = 0;
+		for (int i = 0; i < size; i++)
+		{
+			printf("SumJSArray: arr[%d] = %d\n", i, arr[i]);
+			sum = sum + arr[i];
+		}
+		return sum;
+	}
+	void* EMSCRIPTEN_KEEPALIVE MallocMemory(size_t size)
+	{
+		return malloc(size);
+	};
+
+	void EMSCRIPTEN_KEEPALIVE FreeMemory(void* ptr)
+	{
+		free(ptr);
+	}
+
+	void EMSCRIPTEN_KEEPALIVE CreateNodes(const char* namesfromJs, int* sizeArray, int* shapeSizeArray, int lengthOfSizeArray, const char* parentNamefromJs, int op)
+	{
+		if (app)
+		{
+			app->createNodes(namesfromJs, sizeArray, shapeSizeArray, lengthOfSizeArray, parentNamefromJs, op);
+		}
+	}
+	void EMSCRIPTEN_KEEPALIVE UpdateNodes(const char* searchName)
+	{
+		if (app)
+		{
+			app->updateNodes(searchName);
+		}
+	}
+	void EMSCRIPTEN_KEEPALIVE ClearNodes()
+	{
+		if(app)
+        {
+            app->clearNodes();
+        }
+	}
+    void EMSCRIPTEN_KEEPALIVE SetTime(float time)
+    {
+        global::time = time;
+    }
+    
+	/* 
+	@param namefromJs: The name of the Node.
+	@param op: Operation type, 0 for update, 1 for create.
+	@param data: Pointer to the float array containing transform data.
+	@param lengthArray: Pointer to an integer array containing the lengths of each transformData.
+	@params stepSize  0.002,
+	@param intervals  500,
+	@param startTime  0,
+	@param stopTime  1
+	*/
+	void EMSCRIPTEN_KEEPALIVE SyncAnimateData(
+		const char* namefromJs,
+		int op,
+		float stepSize,
+		int intervals,
+		float startTime,
+		float stopTime,
+		float* data,
+		int lengthArray)
+	{
+		const int ARRAY_ATTRIBUTE_COUNT = 11;
+		if (app)
+		{
+			size_t len = strlen(namefromJs);
+			char* temp = (char*)malloc(len + 1);
+			strcpy(temp, namefromJs);
+			std::string name(temp);
+			free((void*)temp);
+			using TransformData = global::TransformData;
+			std::map<std::string, std::shared_ptr<TransformData> >& transformDataMap = global::transformDataMap;
+			if (op != 0)
+			{
+				transformDataMap.clear();
+			}
+			std::map<std::string, std::shared_ptr<TransformData> >::iterator iter = transformDataMap.find(name);
+			if (iter == transformDataMap.end())
+			{
+				transformDataMap[name] = std::make_shared<TransformData>();
+
+			}
+			int idx = 0;
+			for (int i = 0; i < ARRAY_ATTRIBUTE_COUNT; i++) {
+				int length = lengthArray;
+				for (int j = 0; j < length; j++)
+				{
+					switch (i)
+					{
+					case 0:
+						for (int z = 0; z < 9; z++)
+						{
+							transformDataMap[name]->basis.push_back(data[idx++]);
+						}
+						break;
+					case 1:
+						for (int z = 0; z < 3; z++)
+						{
+							transformDataMap[name]->rotation.push_back(data[idx++]);
+						}
+						break;
+					case 2:
+                        for (int z = 0; z < 3; z++)
+						{
+							transformDataMap[name]->lengthDir.push_back(data[idx++]);
+						}
+						
+						break;
+					case 3:
+						transformDataMap[name]->length.push_back(data[idx++]);
+						break;
+					case 4:
+						transformDataMap[name]->width.push_back(data[idx++]);
+						break;
+					case 5:
+						transformDataMap[name]->height.push_back(data[idx++]);
+						break;
+					case 6:
+						for (int z = 0; z < 3; z++)
+						{
+							transformDataMap[name]->color.push_back(data[idx++]);
+						}
+						break;
+					case 7:
+						transformDataMap[name]->specCoeff.push_back(data[idx++]);
+						break;
+                    case 8:
+                        for (int z = 0; z < 3; z++)
+                        {
+                            transformDataMap[name]->widthDir.push_back(data[idx++]);
+                        }
+                        break;
+                    case 9:
+                        for (int z = 0; z < 3; z++)
+                        {
+                            transformDataMap[name]->rShape.push_back(data[idx++]);
+                        }
+                        break;
+                    case 10:
+                        transformDataMap[name]->extra.push_back(data[idx++]);
+                        break;
+					}
+                    
+				}
+                
+			}
+            
+
+		}
+
+	}
+    void EMSCRIPTEN_KEEPALIVE Init(int width, int height, int r, int g, int b, int a, int useLogger)
+    {   
+        // Make sure SDL is working.
+        if (SDL_Init(SDL_INIT_VIDEO) < 0)
+        {
+            printf("OSGWeb. Could not init SDL: '%s'\n", SDL_GetError());
+            return ;
+        }
+        printf("call js func return %d\n", custom_add(2, 3));
+        // Clean SDL up at exit.
+        atexit(SDL_Quit);
+        // Configure rendering context.
+        // SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
+        // SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
+        // SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
+        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+        // Create rendering window.
+        // int width = 800;
+        // int height = 600;
+        SDL_Window* window =
+            SDL_CreateWindow(
+                "OSGWeb",
+                SDL_WINDOWPOS_CENTERED,
+                SDL_WINDOWPOS_CENTERED,
+                width,
+                height,
+                SDL_WINDOW_OPENGL);
+        if (!window)
+        {
+            printf("OSGWeb. Could not create window: '%s'\n", SDL_GetError());
+            return ;
+        }
+        SDL_GL_CreateContext(window);
+        // Create application.
+        app = new Application;
+        app->setupWindow(width, height);
+        app->setBackgroundColor(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
+        if(useLogger)
+        {
+            app->setupLogging();
+        }
+        emscripten_set_main_loop(loop, -1, 0);
+    }
+    void EMSCRIPTEN_KEEPALIVE Destroy()
+    {
+        std::cout << "OSGWeb. Destroying application." << std::endl;
+        emscripten_cancel_main_loop();
+        if(app)
+        {
+            std::cout << "OSGWeb. Deleting application." << std::endl;
+            delete app;
+            app = nullptr;
+            std::cout << "OSGWeb. Application deleted." << std::endl;
+        }
+    }
+    void EMSCRIPTEN_KEEPALIVE Resize(int width, int height)
+    {
+        if (app)
+        {
+            app->resizeWindow(width, height);
+        }
+    }
+}
+
+
+
+int main(int argc, char* argv[])
+{
+	
+	// app->loadScene("res/box.osgt");
+	// Render asynchronously.
+	
+    // emscripten_cancel_main_loop
+	/**
+	 * https://discourse.libsdl.org/t/how-to-properly-resize-and-redraw-after-window-resize-event/41253/3
+	 * if(resized) {
+		resized = false;
+		SDL_GetWindowSurface(window, &width, &height);
+		surface = SDL_GetWindowSurface(window);
+		uint32_t black = SDL_MapRGBA(surface->format, 0, 0, 0, 255);
+		SDL_FillRect(surface, NULL, black);        // clear the screen
+		SDL_BlitSurface(image, NULL, surface, NULL);
+		SDL_UpdateWindowSurface(window);
+	}
+	 */
+	return 0;
+}
+
