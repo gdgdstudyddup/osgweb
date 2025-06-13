@@ -9,6 +9,7 @@ Application* app = 0;
 void loop()
 {
 	SDL_Event e;
+
 	while (SDL_PollEvent(&e))
 	{
 		if (app)
@@ -118,71 +119,49 @@ extern "C" {
 
 			}
 			int idx = 0;
-			for (int i = 0; i < ARRAY_ATTRIBUTE_COUNT; i++) {
-				int length = lengthArray;
-				for (int j = 0; j < length; j++)
+			for(int j=0; j < lengthArray; j++)
+			{
+				for (int z = 0; z < 9; z++)
 				{
-					switch (i)
-					{
-					case 0:
-						for (int z = 0; z < 9; z++)
-						{
-							transformDataMap[name]->basis.push_back(data[idx++]);
-						}
-						break;
-					case 1:
-						for (int z = 0; z < 3; z++)
-						{
-							transformDataMap[name]->rotation.push_back(data[idx++]);
-						}
-						break;
-					case 2:
-                        for (int z = 0; z < 3; z++)
-						{
-							transformDataMap[name]->lengthDir.push_back(data[idx++]);
-						}
-						
-						break;
-					case 3:
-						transformDataMap[name]->length.push_back(data[idx++]);
-						break;
-					case 4:
-						transformDataMap[name]->width.push_back(data[idx++]);
-						break;
-					case 5:
-						transformDataMap[name]->height.push_back(data[idx++]);
-						break;
-					case 6:
-						for (int z = 0; z < 3; z++)
-						{
-							transformDataMap[name]->color.push_back(data[idx++]);
-						}
-						break;
-					case 7:
-						transformDataMap[name]->specCoeff.push_back(data[idx++]);
-						break;
-                    case 8:
-                        for (int z = 0; z < 3; z++)
-                        {
-                            transformDataMap[name]->widthDir.push_back(data[idx++]);
-                        }
-                        break;
-                    case 9:
-                        for (int z = 0; z < 3; z++)
-                        {
-                            transformDataMap[name]->rShape.push_back(data[idx++]);
-                        }
-                        break;
-                    case 10:
-                        transformDataMap[name]->extra.push_back(data[idx++]);
-                        break;
-					}
-                    
+					
+					transformDataMap[name]->basis.push_back(data[idx++]);
 				}
-                
+				for (int z = 0; z < 3; z++)
+				{
+					
+					transformDataMap[name]->rotation.push_back(data[idx++]);
+				}
+				for (int z = 0; z < 3; z++)
+				{
+					
+					transformDataMap[name]->lengthDir.push_back(data[idx++]);
+				}
+				
+				transformDataMap[name]->length.push_back(data[idx++]);
+				
+				transformDataMap[name]->width.push_back(data[idx++]);
+				
+				transformDataMap[name]->height.push_back(data[idx++]);
+				for (int z = 0; z < 3; z++)
+				{
+					
+					transformDataMap[name]->color.push_back(data[idx++]/255.0);
+				}
+				transformDataMap[name]->specCoeff.push_back(data[idx++]);
+				for (int z = 0; z < 3; z++)
+                {
+					
+                    transformDataMap[name]->widthDir.push_back(data[idx++]);
+                }
+				for (int z = 0; z < 3; z++)
+                {
+					
+                    transformDataMap[name]->rShape.push_back(data[idx++]);
+                }
+				
+				transformDataMap[name]->extra.push_back(data[idx++]);
 			}
             
-
 		}
 
 	}
@@ -194,13 +173,15 @@ extern "C" {
             printf("OSGWeb. Could not init SDL: '%s'\n", SDL_GetError());
             return ;
         }
-        printf("call js func return %d\n", custom_add(2, 3));
+        // printf("call js func return %d\n", custom_add(2, 3));
         // Clean SDL up at exit.
         atexit(SDL_Quit);
         // Configure rendering context.
         // SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
         // SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
         // SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
+		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1); // enable MULTISAMPLE
+		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4); // can be 2, 4, 8 or 16
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         // Create rendering window.

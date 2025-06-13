@@ -209,15 +209,15 @@ public:
 
 		std::string allString(namesfromJs);
 
+		int from = 0;
 		for(int i = 0; i < lengthOfSizeArray; i++)
 		{
 			int size = sizeArray[i];
 			int shapeType = shapeTypeArray[i];
-			int from = i==0 ? 0 : sizeArray[i - 1];
-			int to = from + size;
 			std::string name = allString.substr(from, size);
 			_shapesTypes[name] = shapeType;
 			_shapesIdentifiers.push_back(name);
+			from = from + size;
 		}
 
 		if(_root)
@@ -258,7 +258,6 @@ private:
 	
 	void setupRendering() 
 	{
-		printf("transformDataMap %d\n", global::transformDataMap.size());
 		// Create OpenSceneGraph viewer.
 		_viewer = new osgViewer::Viewer;
 		_root = new osg::Group();
@@ -282,7 +281,6 @@ private:
 	{
 		// Remove the logger from OpenSceneGraph.
 		// This also destroys the logger: no need to deallocate it manually.
-		std::cout << "Tearing down logging." << std::endl;
 		osg::setNotifyHandler(0);
 		// if (_logger)
 		// {

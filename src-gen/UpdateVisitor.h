@@ -30,7 +30,7 @@ public:
     {
       for (const auto &shapeName : _shapesIdentifiers)
       {
-        // printf("_searchName is %s createNodes: name = %s\n", _searchName.c_str(), shapeName.c_str());
+        printf("_searchName is %s createNodes: name = %s\n", _searchName.c_str(), shapeName.c_str());
         switch (_mode)
         {
           case 0:
@@ -250,7 +250,6 @@ public:
       const int len = int(info->basis.size() / 9) - 1;
       if(len >= 0)
       {
-        
         int index = static_cast<int>(std::round(global::time * len)); // index of transformData
         rAndT rT = rotateModelica2OSG(
             osg::Matrix3(info->basis[index * 9 + 0], info->basis[index * 9 + 1], info->basis[index * 9 + 2],

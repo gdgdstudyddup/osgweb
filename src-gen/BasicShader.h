@@ -26,6 +26,9 @@ static const char shaderFragment[] =
     "vec3 ambient = ambientStrength * lightColor; \n"
   	
     "// diffuse \n"
+    // "vec3 fdx = dFdx( position );\n"
+	// "vec3 fdy = dFdy( position );\n"
+	// "vec3 dNormal = normalize( cross( fdx, fdy ) );\n"
     "vec3 norm = normalize(normal); \n"
     "vec3 worldNormal = normalize( ( vec4( norm, 0.0 ) * osg_ViewMatrix ).xyz ); \n"
     "vec3 lightDir = vec3(0, 0, 1);//normalize(lightPos - position); \n"
@@ -36,10 +39,11 @@ static const char shaderFragment[] =
     "//float specularStrength = 0.5; \n"
     "vec3 viewDir = normalize(viewPos - position); \n"
     "vec3 reflectDir = reflect(-lightDir, norm); \n"  
-    "float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0); \n"
+    "float spec = pow(max(dot(viewDir, reflectDir), 0.0), 64.0); \n"
     "vec3 specular = specularStrength * spec * lightColor; \n"  
     " \n"
     "vec3 result = (ambient + diffuse + specular) * objectColor; // * objectColor; \n"
+    
     "glFragColor = vec4(result, 1.0); \n"
     "}                                         \n";
 // Geometry shader to pass geometry vertices to fragment shader.
