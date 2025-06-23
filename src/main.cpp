@@ -77,7 +77,126 @@ extern "C" {
     {
         global::time = time;
     }
-    
+	void EMSCRIPTEN_KEEPALIVE TestAPI()
+	{
+		app->test();
+	}
+	void EMSCRIPTEN_KEEPALIVE SyncModelInfo(
+		const char* namefromJs,
+		float* position,
+		float* normal,
+		float* color,
+		int lengthOfVertex,
+		int* indices,
+		int lengthOfIndices,
+		unsigned char* imageData,
+		int width,
+		int height,
+		int channel
+	)
+	{
+		if(app)
+		{
+			app->addModelData(
+				namefromJs,
+				position,
+				normal,
+				color,
+				lengthOfVertex,
+				indices,
+				lengthOfIndices,
+				imageData,
+				width,
+				height,
+				channel
+			);
+		}
+			// std::string modelName(namefromJs);
+			// osg::Vec3 myCoords[] =
+            // {
+            //     osg::Vec3(-1.12056, -2.15188e-09, -0.840418),
+            //     osg::Vec3(-0.95165, -2.15188e-09, -0.840418),
+            //     osg::Vec3(-1.11644, 9.18133e-09, -0.716827),
+
+            //     // note in anticlockwise order.
+            //     osg::Vec3(-0.840418, 9.18133e-09, -0.778623),
+            //     osg::Vec3(-0.622074, 9.18133e-09, -0.613835),
+            //     osg::Vec3(-1.067, 9.18133e-09, -0.609715),
+
+            // };
+
+
+            // int numCoords = sizeof(myCoords)/sizeof(osg::Vec3);
+
+			// basePlane = new osg::DrawElementsUInt(osg::PrimitiveSet::TRIANGLES, 0);
+			// this->setVertexArray(vertices);
+			// this->setNormalArray(normals);
+			// this->setTexCoordArray(0,texcoords);
+			// this->setNormalBinding( osg::Geometry::BIND_PER_VERTEX);
+	}
+	/*
+	'a'+bb'
+	[1, 2]
+	'contentA'+ 'contentBB'
+	[8, 9]
+	[2]
+	@param namesfromJs: Array of node names from JavaScript.
+	@param contentsfromJs: Array of node contents from JavaScript.
+	@param nameLengthArray: Array of lengths of each node name.
+	@param contentLengthArray: Array of lengths of each node content.
+	@param countOfNodes: Number of nodes to sync.
+	*/
+    void EMSCRIPTEN_KEEPALIVE SyncCADFile(
+		const char* namesfromJs,
+		int* nameLengthArray,
+		const char* contentsfromJs,
+		int* contentLengthArray,
+		int countOfNodes
+	)
+	{
+		if (app)
+		{
+			int from0 = 0;
+			int from1 = 0;
+			for(int i=0; i< countOfNodes; i++)
+			{
+			
+				std::string namePack(namesfromJs);
+				std::string contentPack(contentsfromJs);
+				
+				int size = nameLengthArray[i];
+				std::string nodeName = namePack.substr(from0, size);
+				from0 = from0 + size;
+				size = contentLengthArray[i];
+				std::string content = contentPack.substr(from1, size);
+				from1 = from1 + size;
+
+				std::cout << "SyncCADFile: name = " << nodeName  << std::endl;
+				std::cout << "SyncCADFile: content = " << content << std::endl;
+				std::vector<std::string> lines;
+				size_t start = 0;
+				size_t end = content.find('\n', start); // 从 start 开始找第一个 '\n'
+
+				while (end != std::string::npos) {
+					// 截取 [start, end) 区间的子串（不包含 '\n'）
+					lines.push_back(content.substr(start, end - start));
+					start = end + 1; // 移动到 '\n' 下一个字符
+					end = content.find('\n', start); // 继续找下一个 '\n'
+				}
+				/*
+				if (start <= input.size()) {
+					lines.push_back(input.substr(start));
+				}
+				*/
+				for(auto line : lines)
+				{
+					std::cout<<line<<std::endl;
+				}
+				// app->syncCADFile(content, lengthArray[i]);
+			}
+		}
+	}
+	// shapeFileUrl
 	/* 
 	@param namefromJs: The name of the Node.
 	@param op: Operation type, 0 for update, 1 for create.

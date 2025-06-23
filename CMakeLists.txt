@@ -34,15 +34,24 @@ INCLUDE_DIRECTORIES(${OSG_SOURCE_DIR}/include)
 INCLUDE_DIRECTORIES(${OSG_BUILD_DIR}/include)
 LINK_DIRECTORIES(${OSG_BUILD_DIR}/lib)
 
+# FILE(GLOB SOURCES "src/*.cpp")
+SET(SOURCES 
+    src/main.cpp 
+    src/Global.cpp 
+    src/Application.cpp 
+    src/UpdateVisitor.cpp
+    src/ExtraShapes.cpp
+    src/CADHelper.cpp 
+)
 # Build sample.
 INCLUDE_DIRECTORIES(src-gen)
-ADD_EXECUTABLE(sample-ems src/main.cpp)
+ADD_EXECUTABLE(sample-ems ${SOURCES})
 # Make Emscripten generate ready-to-open HTML page.
 SET(CMAKE_EXECUTABLE_SUFFIX ".html")
 # Make Emscripten preload the resource.
-# SET_TARGET_PROPERTIES(sample-ems PROPERTIES LINK_FLAGS "--preload-file box.osgt")
+# SET_TARGET_PROPERTIES(sample-ems PROPERTIES LINK_FLAGS "--preload-file box.obj")
 # Copy the resource to the build directory.
-CONFIGURE_FILE(box.osgt box.osgt COPYONLY)
+# CONFIGURE_FILE(box.osgt box.osgt COPYONLY)
 # Libraries must be linked in the specified order.
 # Otherwise you may get unsatisified linker errors.
 TARGET_LINK_LIBRARIES(

@@ -22,84 +22,33 @@ freely, subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef FUNCTIONS_H
-#define FUNCTIONS_H
+#ifndef FUNCTION_UTILS_H
+#define FUNCTION_UTILS_H
 
-#include <osg/Notify>
 
-// Convert NotifySeverity enum value to string.
-std::string LogLevelToString(osg::NotifySeverity severity)
-{
-    switch (severity)
-    {
-        case osg::DEBUG_FP:
-            // Verbose.
-            return "V";
-        case osg::DEBUG_INFO:
-            // Debug.
-            return "D";
-        case osg::NOTICE:
-        case osg::INFO:
-            // Info.
-            return "I";
-        case osg::WARN:
-            // Warning.
-            return "W";
-        case osg::FATAL:
-        case osg::ALWAYS:
-            // Error.
-            return "E";
-    }
-}
 
-#include <cstdarg>
+// #include <osg/Camera>
 
-// Construct a string using printf-like syntax.
-std::string PrintfString(const char *fmt, ...)
-{
-    const int PRINTF_STRING_MAX_STRLEN = 1024;
-    va_list args;
-    char msg[PRINTF_STRING_MAX_STRLEN];
-    va_start(args, fmt);
-    vsnprintf(msg, PRINTF_STRING_MAX_STRLEN, fmt, args);
-    va_end(args);
-    return msg;
-}
+// // Configure camera with common defaults.
+// void setupCamera(
+//     osg::Camera *cam,
+//     osg::GraphicsContext *gc,
+//     double fovy,
+//     int width,
+//     int height)
+// {
+//     // Provide GC.
+//     cam->setGraphicsContext(gc);
+//     // Viewport must have the same size.
+//     cam->setViewport(new osg::Viewport(0, 0, width, height));
+//     // Clear depth and color buffers each frame.
+//     cam->setClearMask(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+//     cam->setClearColor(osg::Vec4(0.95, 0.95, 0.95, 1.0));
+//     // Aspect ratio.
+//     float aspect = static_cast<float>(width) / static_cast<float>(height);
+//     // Configure projection.
+//     cam->setProjectionMatrixAsPerspective(30, aspect, 1, 10000);
+// }
 
-// BEGIN FEATURE LOGGING_DEFAULT
-#include <iostream>
-// END   FEATURE LOGGING_DEFAULT
-
-// Platform specific logging.
-void platformLog(const char *message)
-{
-// BEGIN FEATURE LOGGING_DEFAULT
-    std::cout << message << std::endl;
-// END   FEATURE LOGGING_DEFAULT
-}
-
-#include <osg/Camera>
-
-// Configure camera with common defaults.
-void setupCamera(
-    osg::Camera *cam,
-    osg::GraphicsContext *gc,
-    double fovy,
-    int width,
-    int height)
-{
-    // Provide GC.
-    cam->setGraphicsContext(gc);
-    // Viewport must have the same size.
-    cam->setViewport(new osg::Viewport(0, 0, width, height));
-    // Clear depth and color buffers each frame.
-    cam->setClearMask(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-    cam->setClearColor(osg::Vec4(0.95, 0.95, 0.95, 1.0));
-    // Aspect ratio.
-    float aspect = static_cast<float>(width) / static_cast<float>(height);
-    // Configure projection.
-    cam->setProjectionMatrixAsPerspective(30, aspect, 1, 10000);
-}
-
-#endif // FUNCTIONS_H
+#endif // FUNCTION_UTILS_H
 

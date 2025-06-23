@@ -1,7 +1,13 @@
+#pragma once
 #include<map>
+#include <osg/Notify>
+#include <cstdarg>
+#include <osg/Camera>
+#include <iostream>
 using namespace std;
 
-namespace global{
+namespace global
+{
     struct TransformData
     {
         std::vector<float> basis; // 9 array
@@ -32,20 +38,7 @@ namespace global{
         };
     };
 
-    // struct TransformData
-    // {
-    //   osg::Vec3Array basis;
-    //   osg::MatrixfArray rotation;
-    //   osg::Vec3 rShape;
-    //   osg::Vec3Array lengthDir;
-    //   osg::Vec4 widthDir;
-    //   osg::FloatArray length;
-    //   osg::FloatArray width;
-    //   osg::FloatArray height;
-    //   osg::Vec3Array color;
-    //   osg::FloatArray specCoeff;
-    
-    // };
-	std::map<std::string, std::shared_ptr<TransformData> > transformDataMap;
-    float time = 0.0f;
+	extern std::map<std::string, std::shared_ptr<TransformData> > transformDataMap;
+    extern float time;
+    extern osg::ref_ptr<osg::Program> basicProgram;
 }
