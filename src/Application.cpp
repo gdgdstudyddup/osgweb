@@ -152,13 +152,45 @@ void Application::resizeWindow(int width, int height) {
 	// BEGIN FEATURE RENDERING_DEFAULT
 void Application::frame() {
 		_viewer->frame();
-	}
+}
+void Application::home() {
+		if (_viewer) {
+			
+			osg::BoundingSphere boundingSphere = _root->getBound();
+			double radius = osg::maximum(double(boundingSphere.radius()), 1e-6);
+			double dist = 3.5f * radius;
+			// try to compute dist from frustum
+            double left,right,bottom,top,zNear,zFar;
+            if (_viewer->getCamera()->getProjectionMatrixAsFrustum(left,right,bottom,top,zNear,zFar))
+            {
+                double vertical2 = fabs(right - left) / zNear / 2.;
+                double horizontal2 = fabs(top - bottom) / zNear / 2.;
+                double dim = horizontal2 < vertical2 ? horizontal2 : vertical2;
+                double viewAngle = atan2(dim,1.);
+                dist = radius / sin(viewAngle);
+            }
+			else {
+				// try to compute dist from ortho
+                if (_viewer->getCamera()->getProjectionMatrixAsOrtho(left,right,bottom,top,zNear,zFar))
+                {
+                    dist = fabs(zFar - zNear) / 2.;
+                }
+			}
+			_tracballManipulator->setHomePosition(
+                    boundingSphere.center() + osg::Vec3d(0.0, -radius, 0.0f),
+                    boundingSphere.center(),
+                    osg::Vec3d(0.0f,0.0f,1.0f)
+                );
+			cameraPositionSide();
+		}
+}
 void Application::clearNodes() {
 		if(_root)
 		{
 			_root->removeChildren(0, _root->getNumChildren());
 		}
 		_insertVisitor._shapesIdentifiers.clear();
+		_insertVisitor._shapesTypes.clear();
 		_updateVisitor._shapesTypes.clear();
 	}
 void Application::addModelData(
@@ -214,9 +246,11 @@ void Application::createNodes(const char* namesfromJs, int* sizeArray, int* shap
 	{
 
 		std::vector<std::string> &_shapesIdentifiers = _insertVisitor._shapesIdentifiers;
+		std::map<std::string, int>& _shapesTypesI = _updateVisitor._shapesTypes;
 		std::map<std::string, int>& _shapesTypes = _updateVisitor._shapesTypes;
 		if(op == 0)
 		{
+			_shapesTypesI.clear();
 			_shapesTypes.clear();
 			_shapesIdentifiers.clear();
 		}
@@ -233,6 +267,7 @@ void Application::createNodes(const char* namesfromJs, int* sizeArray, int* shap
 			int size = sizeArray[i];
 			int shapeType = shapeTypeArray[i];
 			std::string name = allString.substr(from, size);
+			_shapesTypesI[name] = shapeType;
 			_shapesTypes[name] = shapeType;
 			_shapesIdentifiers.push_back(name);
 			from = from + size;
@@ -242,6 +277,10 @@ void Application::createNodes(const char* namesfromJs, int* sizeArray, int* shap
 		{
 			_root->accept(_insertVisitor);
 		}
+		/*
+			_insertVisitor._mode = 1;
+			_root->accept(_insertVisitor); // do it for vector
+		*/
 		free((void*) temp);
 		// app->_root->accept(insertVisitor);
 	}
@@ -272,7 +311,7 @@ void Application::setupLogging() {
 		// like warnings and errors.
 		osg::setNotifyLevel(osg::INFO);
 	}
-void Application::Application::setupRendering() 
+void Application::setupRendering() 
 	{
 		// Create OpenSceneGraph viewer.
 		_viewer = new osgViewer::Viewer;
@@ -283,6 +322,7 @@ void Application::Application::setupRendering()
 		_viewer->setThreadingModel(osgViewer::ViewerBase::SingleThreaded);
 		// Create manipulator: CRITICAL for mobile and web.
 		_tracballManipulator = new osgGA::TrackballManipulator();
+		_cameraPose = 0;
     	_tracballManipulator->setHomePosition(
                     osg::Vec3d(0.0, -2, 0.0f),
                     osg::Vec3d(0.0f,0.0f,0.0f),
@@ -292,8 +332,117 @@ void Application::Application::setupRendering()
 		_viewer->setSceneData(_root.get());
 		// END   FEATURE RENDERING_DEFAULT
 	}
-	
-void Application::Application::tearDownLogging() 
+double Application::computeDistanceToOrigin()
+{
+  osg::ref_ptr<osgGA::CameraManipulator> manipulator = _tracballManipulator;
+  osg::Matrixd mat = manipulator->getMatrix();
+  //assemble
+
+  //Compute distance to center using pythagoras theorem
+  double d = sqrt(abs(mat(3,0))*abs(mat(3,0))+
+                  abs(mat(3,1))*abs(mat(3,1))+
+                  abs(mat(3,2))*abs(mat(3,2)));
+
+  //If d is very small (~0), set it to 1 as default
+  if(d < 1e-10) {
+    d=1;
+  }
+
+  return d;
+}
+void Application::cameraPositionIsometric()
+{
+  double d = computeDistanceToOrigin();
+  osg::Matrixd mat = osg::Matrixd(0.7071, 0, -0.7071, 0,
+                                  -0.409, 0.816, -0.409, 0,
+                                  0.57735,  0.57735, 0.57735, 0,
+                                  0.57735*d, 0.57735*d, 0.57735*d, 1);
+  _tracballManipulator->setByMatrix(mat);
+  _cameraPose = 3; // isometric
+}
+
+/*!
+ * sets the camera position to Side
+ */
+void Application::cameraPositionSide()
+{
+  double d = computeDistanceToOrigin();
+  osg::Matrixd mat = osg::Matrixd(1, 0, 0, 0,
+                                  0, 1, 0, 0,
+                                  0, 0, 1, 0,
+                                  0, 0, d, 1);
+  _tracballManipulator->setByMatrix(mat);
+  _cameraPose = 0; // side
+}
+
+/*!
+ * sets the camera position to Front
+ */
+void Application::cameraPositionFront()
+{
+  double d = computeDistanceToOrigin();
+  osg::Matrixd mat = osg::Matrixd( 0, 0,-1, 0,
+                                   0, 1, 0, 0,
+                                   1, 0, 0, 0,
+                                   d, 0, 0, 1);
+  _tracballManipulator->setByMatrix(mat);
+  _cameraPose = 1; // front
+}
+
+/*!
+ * sets the camera position to Top
+ */
+void Application::cameraPositionTop()
+{
+  double d = computeDistanceToOrigin();
+  osg::Matrixd mat = osg::Matrixd( 0, 0, 1, 0,
+                                   1, 0, 0, 0,
+                                   0, 1, 0, 0,
+                                   0, d, 0, 1);
+  _tracballManipulator->setByMatrix(mat);
+  _cameraPose = 2; // top
+}
+void Application::rotateCameraLeft()
+{
+  osg::Matrixd mat = _tracballManipulator->getMatrix();
+  osg::Camera *pCamera = _viewer->getCamera();
+
+  osg::Vec3d eye, center, up;
+  pCamera->getViewMatrixAsLookAt(eye, center, up);
+  osg::Vec3d rotationAxis = center-eye;
+
+  osg::Matrixd rotMatrix;
+  rotMatrix.makeRotate(3.1415/2.0, rotationAxis);
+
+ _tracballManipulator->setByMatrix(mat*rotMatrix);
+}
+void Application::rotateCameraRight()
+{
+  osg::Matrixd mat = _tracballManipulator->getMatrix();
+  osg::Camera *pCamera = _viewer->getCamera();
+
+  osg::Vec3d eye, center, up;
+  pCamera->getViewMatrixAsLookAt(eye, center, up);
+  osg::Vec3d rotationAxis = center-eye;
+
+  osg::Matrixd rotMatrix;
+
+  rotMatrix.makeRotate(-3.1415/2.0, rotationAxis);
+
+ _tracballManipulator->setByMatrix(mat*rotMatrix);
+}
+void Application::rotateFixed(int isLeft)
+{
+	if(isLeft)
+	{
+		rotateCameraLeft();	
+	}
+	else
+	{
+		rotateCameraRight();
+	}
+}
+void Application::tearDownLogging() 
 	{
 		// Remove the logger from OpenSceneGraph.
 		// This also destroys the logger: no need to deallocate it manually.

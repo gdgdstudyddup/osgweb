@@ -294,7 +294,7 @@ void UpdateVisitor::apply(osg::MatrixTransform &node)
             int index = static_cast<int>(std::round(global::time * len)); // index of transformData
             if (cad.valid() && cad->getNumChildren() == 1)
             {
-                osg::ref_ptr<osg::Geode> geode = dynamic_cast<osg::Geode*>(cad->getChild(0));
+                osg::ref_ptr<osg::Geode> geode = dynamic_cast<osg::Geode*>(cad->getChild(0));                
                 if(geode.valid())
                 {
                 cad->scaleVertices(geode, info->extra[index], info->length[index], info->width[index], info->height[index]); 

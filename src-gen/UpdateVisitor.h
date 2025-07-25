@@ -4,6 +4,7 @@
 #include <osg/NodeVisitor>
 #include <osg/Geode>
 #include <osg/MatrixTransform>
+#include <osg/AutoTransform>
 #include <osg/ShapeDrawable>
 #include <map>
 
@@ -44,6 +45,7 @@ public:
   int _mode; // 0: transform+geod + drawable;
   std::string _searchName;
   std::vector<std::string> _shapesIdentifiers;
+  std::map<std::string, int> _shapesTypes; // searchname -> type
   std::map<std::string, ModelData*> _modelDataMap;
 };
 class UpdateVisitor : public osg::NodeVisitor {
@@ -60,6 +62,7 @@ public:
   int _childType;
   std::string _searchName;
   std::map<std::string, int> _shapesTypes; // searchname -> type
+  osg::Matrix _mat;
   VBOSetupVisitor _vbo;
 };
 #endif // UPDATE_VISITOR_H

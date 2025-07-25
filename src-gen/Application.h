@@ -114,7 +114,16 @@ public:
 	void createNodes(const char* namesfromJs, int* sizeArray, int* shapeTypeArray, int lengthOfSizeArray, const char* parentNamefromJs, int op);
 	void updateNodes(const char* namefromJs);
 	void setBackgroundColor(float r, float g, float b, float a);
+	void home();
 	void setupLogging();
+	double computeDistanceToOrigin();
+	void cameraPositionIsometric();
+	void cameraPositionSide();
+	void cameraPositionFront();
+	void cameraPositionTop();
+	void rotateCameraLeft();
+	void rotateCameraRight();
+	void rotateFixed(int isLeft);
 private:
 	
 	void setupRendering();
@@ -128,6 +137,7 @@ private:
     InsertVisitor _insertVisitor;
 	UpdateVisitor _updateVisitor;
 	osg::ref_ptr<Logger> _logger;
+	int _cameraPose; // 0 side, 1 front, 2 top, 3 isometric, 
 };
 
 #endif // APPLICATION_H

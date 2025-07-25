@@ -81,6 +81,48 @@ extern "C" {
 	{
 		app->test();
 	}
+	void EMSCRIPTEN_KEEPALIVE Home()
+	{
+		if (app)
+		{
+			app->home();
+		}
+	}
+	void EMSCRIPTEN_KEEPALIVE CameraIsometric()
+	{
+		if (app)
+		{
+			app->cameraPositionIsometric();
+		}
+	}
+	void EMSCRIPTEN_KEEPALIVE CameraSide()
+	{
+		if (app)
+		{
+			app->cameraPositionSide();
+		}
+	}
+	void EMSCRIPTEN_KEEPALIVE CameraFront()
+	{
+		if (app)
+		{
+			app->cameraPositionFront();
+		}
+	}
+	void EMSCRIPTEN_KEEPALIVE CameraTop()
+	{
+		if (app)
+		{
+			app->cameraPositionTop();
+		}	
+	}
+	void EMSCRIPTEN_KEEPALIVE RotateFixed(int isLeft)
+	{
+		if(app)
+		{
+			app->rotateFixed(isLeft);
+		}
+	}
 	void EMSCRIPTEN_KEEPALIVE SyncModelInfo(
 		const char* namefromJs,
 		float* position,
@@ -134,68 +176,6 @@ extern "C" {
 			// this->setTexCoordArray(0,texcoords);
 			// this->setNormalBinding( osg::Geometry::BIND_PER_VERTEX);
 	}
-	/*
-	'a'+bb'
-	[1, 2]
-	'contentA'+ 'contentBB'
-	[8, 9]
-	[2]
-	@param namesfromJs: Array of node names from JavaScript.
-	@param contentsfromJs: Array of node contents from JavaScript.
-	@param nameLengthArray: Array of lengths of each node name.
-	@param contentLengthArray: Array of lengths of each node content.
-	@param countOfNodes: Number of nodes to sync.
-	*/
-    void EMSCRIPTEN_KEEPALIVE SyncCADFile(
-		const char* namesfromJs,
-		int* nameLengthArray,
-		const char* contentsfromJs,
-		int* contentLengthArray,
-		int countOfNodes
-	)
-	{
-		if (app)
-		{
-			int from0 = 0;
-			int from1 = 0;
-			for(int i=0; i< countOfNodes; i++)
-			{
-			
-				std::string namePack(namesfromJs);
-				std::string contentPack(contentsfromJs);
-				
-				int size = nameLengthArray[i];
-				std::string nodeName = namePack.substr(from0, size);
-				from0 = from0 + size;
-				size = contentLengthArray[i];
-				std::string content = contentPack.substr(from1, size);
-				from1 = from1 + size;
-
-				std::cout << "SyncCADFile: name = " << nodeName  << std::endl;
-				std::cout << "SyncCADFile: content = " << content << std::endl;
-				std::vector<std::string> lines;
-				size_t start = 0;
-				size_t end = content.find('\n', start); // 从 start 开始找第一个 '\n'
-
-				while (end != std::string::npos) {
-					// 截取 [start, end) 区间的子串（不包含 '\n'）
-					lines.push_back(content.substr(start, end - start));
-					start = end + 1; // 移动到 '\n' 下一个字符
-					end = content.find('\n', start); // 继续找下一个 '\n'
-				}
-				/*
-				if (start <= input.size()) {
-					lines.push_back(input.substr(start));
-				}
-				*/
-				for(auto line : lines)
-				{
-					std::cout<<line<<std::endl;
-				}
-				// app->syncCADFile(content, lengthArray[i]);
-			}
-		}
-	}
 	// shapeFileUrl
 	/* 
 	@param namefromJs: The name of the Node.
@@ -231,6 +211,7 @@ extern "C" {
 			{
 				transformDataMap.clear();
 			}
+			// we cannot use op=1 to clear transformMap because we will initialize map after clearing. use ClearAnimateData instead.
 			std::map<std::string, std::shared_ptr<TransformData> >::iterator iter = transformDataMap.find(name);
 			if (iter == transformDataMap.end())
 			{
@@ -280,6 +261,7 @@ extern "C" {
 				
 				transformDataMap[name]->extra.push_back(data[idx++]);
 			}
+			std::cout<<transformDataMap.size()<<" transformDataMap size."<<std::endl;
             
 		}
 
@@ -330,6 +312,13 @@ extern "C" {
         }
         emscripten_set_main_loop(loop, -1, 0);
     }
+	void EMSCRIPTEN_KEEPALIVE ClearAnimateData()
+	{
+		using TransformData = global::TransformData;
+		std::map<std::string, std::shared_ptr<TransformData> >& transformDataMap = global::transformDataMap;
+		transformDataMap.clear();
+		std::cout << "OSGWeb. Clear animate data." << std::endl;
+	}
     void EMSCRIPTEN_KEEPALIVE Destroy()
     {
         std::cout << "OSGWeb. Destroying application." << std::endl;
