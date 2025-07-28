@@ -176,11 +176,15 @@ void Application::home() {
                     dist = fabs(zFar - zNear) / 2.;
                 }
 			}
-			_tracballManipulator->setHomePosition(
-                    boundingSphere.center() + osg::Vec3d(0.0, -radius, 0.0f),
-                    boundingSphere.center(),
-                    osg::Vec3d(0.0f,0.0f,1.0f)
-                );
+			osg::Vec3d center, eye, up;
+    		_tracballManipulator->getTransformation( eye, center, up );
+
+			osg::Vec3d newEye = boundingSphere.center() + osg::Vec3d(0.0, -dist, 0.0f);
+			_tracballManipulator->setTransformation(newEye, center, up);
+
+			//osg::Vec3d temp = boundingSphere.center() + osg::Vec3d(0.0, -dist, 0.0f);
+			//std::cout<<"dist "<<radius<<" radius "<<dist<<std::endl;
+			//std::cout<< temp.x() <<" "<<temp.y()<<" "<<temp.z()<< std::endl;
 			cameraPositionSide();
 		}
 }
@@ -367,6 +371,7 @@ void Application::cameraPositionIsometric()
 void Application::cameraPositionSide()
 {
   double d = computeDistanceToOrigin();
+  std::cout<<"computeDistanceToOrigin "<<d<<std::endl;
   osg::Matrixd mat = osg::Matrixd(1, 0, 0, 0,
                                   0, 1, 0, 0,
                                   0, 0, 1, 0,
