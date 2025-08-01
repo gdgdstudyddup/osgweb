@@ -10,7 +10,7 @@ void InsertVisitor::apply(osg::Group &node)
     {
       for (const auto &shapeName : _shapesIdentifiers)
       {
-        printf("_searchName is %s createNodes: name = %s\n", _searchName.c_str(), shapeName.c_str());
+        //printf("_searchName is %s createNodes: name = %s\n", _searchName.c_str(), shapeName.c_str());
         auto it = _modelDataMap.find(shapeName);  
         if (it != _modelDataMap.end())
         {
@@ -31,7 +31,7 @@ void InsertVisitor::apply(osg::Group &node)
             node.addChild(transf.get());
             // now  we can clear data.
             //   _modelDataMap.erase(shapeName);
-            printf("_modelDataMapSize is %zu\n", _modelDataMap.size());
+            //printf("_modelDataMapSize is %zu\n", _modelDataMap.size());
         }
         else
         {
@@ -72,8 +72,8 @@ void UpdateVisitor::apply(osg::Geode &node)
         if (iterator != _shapesTypes.end())
         {
           using TransformData = global::TransformData;
-          std::map<std::string, std::shared_ptr<TransformData> > &transformDataMap = global::transformDataMap;
-          std::shared_ptr<TransformData> info = transformDataMap[_searchName];
+          std::map<std::string, TransformData* > &transformDataMap = global::transformDataMap;
+          TransformData* info = transformDataMap[_searchName];
           if(info)
           {
               const int len = int(info->basis.size() / 9) - 1;
@@ -262,8 +262,8 @@ void UpdateVisitor::apply(osg::MatrixTransform &node)
     if(node.getName() == _searchName + "t")
     {
       using TransformData = global::TransformData;
-      std::map<std::string, std::shared_ptr<TransformData> > &transformDataMap = global::transformDataMap;
-      std::shared_ptr<TransformData> info = transformDataMap[_searchName];
+      std::map<std::string, TransformData* > &transformDataMap = global::transformDataMap;
+      TransformData* info = transformDataMap[_searchName];
       const int len = int(info->basis.size() / 9) - 1;
       if(len >= 0)
       {
@@ -287,8 +287,8 @@ void UpdateVisitor::apply(osg::MatrixTransform &node)
         if (node.getNumChildren() > 0)
         {
             using TransformData = global::TransformData;
-            std::map<std::string, std::shared_ptr<TransformData> > &transformDataMap = global::transformDataMap;
-            std::shared_ptr<TransformData> info = transformDataMap[_searchName];
+            std::map<std::string, TransformData* > &transformDataMap = global::transformDataMap;
+            TransformData* info = transformDataMap[_searchName];
             osg::ref_ptr<CADGroup> cad = dynamic_cast<CADGroup*>(node.getChild(0));
             const int len = int(info->basis.size() / 9) - 1;
             int index = static_cast<int>(std::round(global::time * len)); // index of transformData

@@ -124,6 +124,7 @@ public:
 	void rotateCameraLeft();
 	void rotateCameraRight();
 	void rotateFixed(int isLeft);
+	void setPressCtrl(bool isPressCtrl);
 private:
 	
 	void setupRendering();

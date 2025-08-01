@@ -188,7 +188,6 @@ public:
 
             osg::Geode* geode = dynamic_cast<osg::Geode *>(transform->getChild(0));
             if(geode) {
-                printf("!!!!!!!!!!!!?%f\n",time);
                 if(m_test > 10.0f) 
                 {
                     osg::ref_ptr<osg::Geometry> geom = dynamic_cast<osg::Geometry*>(geode->getDrawable(0));
@@ -298,7 +297,7 @@ class Application
             stateset->setTextureAttributeAndModes( 1, texture.get() );
             mRoot->addChild(mScene.get());
             std::string className = std::string(typeid(mScene.get()).name());
-            printf("mScene %s", className.c_str());
+            // printf("mScene %s", className.c_str());
             // for(int i=0;i<mScene._vertexArray.length();i++) {
             //     printf("mScene vertex %d %d %d", i, mScene.get()._vertexArray[i].x,mScene.get()._vertexArray[i].y,mScene.get()._vertexArray[i].z);
             // }
@@ -435,11 +434,11 @@ class Application
                     return true;
                 case SDL_MOUSEBUTTONDOWN:
                     queue.mouseButtonPress(e.button.x, e.button.y, e.button.button);
-                    printf("OSGWeb. Application. Mouse button down\n");
+                    //printf("OSGWeb. Application. Mouse button down\n");
                     return true;
                 case SDL_MOUSEBUTTONUP:
                     queue.mouseButtonRelease(e.button.x, e.button.y, e.button.button);
-                    printf("OSGWeb. Application. Mouse button up\n");
+                    //printf("OSGWeb. Application. Mouse button up\n");
                     return true;
                 case SDL_MOUSEWHEEL:
                     //queue.mouseButtonWheel(e.button.x, e.button.y, e.button.button);

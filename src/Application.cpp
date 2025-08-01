@@ -101,6 +101,12 @@ Application::~Application()
 {
 	tearDownLogging();
 }
+void Application::setPressCtrl(bool isPressCtrl) {
+		if(_tracballManipulator)
+		{
+			_tracballManipulator->_pressCtrl = isPressCtrl;
+		}
+}
 // BEGIN FEATURE INPUT_EMSCRIPTEN
 bool Application::handleEvent(SDL_Event& e) {
 		osgViewer::GraphicsWindow* gw = dynamic_cast<osgViewer::GraphicsWindow*>(
