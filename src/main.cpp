@@ -37,7 +37,7 @@ extern "C" {
 		int sum = 0;
 		for (int i = 0; i < size; i++)
 		{
-			printf("SumJSArray: arr[%d] = %d\n", i, arr[i]);
+			//printf("SumJSArray: arr[%d] = %d\n", i, arr[i]);
 			sum = sum + arr[i];
 		}
 		return sum;
@@ -123,6 +123,13 @@ extern "C" {
 			app->rotateFixed(isLeft);
 		}
 	}
+	void EMSCRIPTEN_KEEPALIVE setPressCtrl(bool isPressCtrl)
+	{
+		if(app)
+		{
+			app->setPressCtrl(isPressCtrl);
+		}
+	}
 	void EMSCRIPTEN_KEEPALIVE SyncModelInfo(
 		const char* namefromJs,
 		float* position,
@@ -206,16 +213,18 @@ extern "C" {
 			std::string name(temp);
 			free((void*)temp);
 			using TransformData = global::TransformData;
-			std::map<std::string, std::shared_ptr<TransformData> >& transformDataMap = global::transformDataMap;
+			std::map<std::string, TransformData* >& transformDataMap = global::transformDataMap;
+			std::cout << "Map size before: " << transformDataMap.size() << std::endl;
 			if (op != 0)
 			{
 				transformDataMap.clear();
 			}
 			// we cannot use op=1 to clear transformMap because we will initialize map after clearing. use ClearAnimateData instead.
-			std::map<std::string, std::shared_ptr<TransformData> >::iterator iter = transformDataMap.find(name);
-			if (iter == transformDataMap.end())
+			//std::cout<<name<<"\n";
+			if (transformDataMap.find(name) == transformDataMap.end())
 			{
-				transformDataMap[name] = std::make_shared<TransformData>();
+				std::cout<<name<<" does not be found\n";
+				transformDataMap[name] = new TransformData();
 
 			}
 			int idx = 0;
@@ -261,7 +270,7 @@ extern "C" {
 				
 				transformDataMap[name]->extra.push_back(data[idx++]);
 			}
-			std::cout<<transformDataMap.size()<<" transformDataMap size."<<std::endl;
+			//std::cout<<transformDataMap.size()<<" transformDataMap size."<<std::endl;
             
 		}
 
@@ -315,8 +324,15 @@ extern "C" {
 	void EMSCRIPTEN_KEEPALIVE ClearAnimateData()
 	{
 		using TransformData = global::TransformData;
-		std::map<std::string, std::shared_ptr<TransformData> >& transformDataMap = global::transformDataMap;
-		transformDataMap.clear();
+		std::map<std::string, TransformData* >& transformDataMap = global::transformDataMap;
+		//transformDataMap.clear();
+		std::map<std::string, TransformData* >::iterator it;
+		for(it=transformDataMap.begin(); it!=transformDataMap.end();)
+		{
+			//cout<<"key: "<<it->first <<" value: "<<*it->second<<endl;
+			delete it->second;
+			transformDataMap.erase(it++);
+		}
 		std::cout << "OSGWeb. Clear animate data." << std::endl;
 	}
     void EMSCRIPTEN_KEEPALIVE Destroy()

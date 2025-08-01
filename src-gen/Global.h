@@ -38,7 +38,7 @@ namespace global
         };
     };
 
-	extern std::map<std::string, std::shared_ptr<TransformData> > transformDataMap;
+	extern std::map<std::string, TransformData* > transformDataMap;
     extern float time;
     extern osg::ref_ptr<osg::Program> basicProgram;
 }
